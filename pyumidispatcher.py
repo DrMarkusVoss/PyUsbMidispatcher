@@ -5,10 +5,6 @@ from rtmidi.midiutil import list_input_ports, list_output_ports, open_midiinput,
 
 def dispatcherMainLoop():
 
-    # midiout = rtmidi.MidiOut()
-
-
-
     list_input_ports()
 
     selected_input_port = selectInputPort()
@@ -16,8 +12,6 @@ def dispatcherMainLoop():
     list_output_ports()
 
     selected_output_port = selectOutputPort()
-
-    #midiout.open_port(selected_output_port)
 
     midiout, port_name_out = open_midioutput(selected_output_port)
 
