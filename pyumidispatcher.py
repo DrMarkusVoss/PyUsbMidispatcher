@@ -1,5 +1,6 @@
 import time
 import rtmidi
+import math
 from rtmidi.midiutil import list_input_ports, list_output_ports, open_midiinput, open_midioutput
 
 
@@ -17,8 +18,15 @@ def dispatcherMainLoop():
 
     midiin, port_name_in = open_midiinput(selected_input_port)
 
+    # also receive and send clock data
+    midiin.ignore_types(timing=False)
+
     print("\nUSB-MIDI Dispatcher is active now!\n\n")
     print("\nPress Control-C to exit.")
+    clkcounter = 0
+    clktimest1 = 0
+    clktimest2 = 0
+    calcbpm = 0
     try:
         timer = time.time()
         while True:
@@ -27,8 +35,23 @@ def dispatcherMainLoop():
             if msg:
                 message, deltatime = msg
                 timer += deltatime
-                print("[%s] -> [%s]:  %r" % (port_name_in,port_name_out, message))
-                midicmd, note, velocity = message
+                if int(message[0]) == 248:
+                    clkcounter += 1
+                    if clktimest1 == 0:
+                        clktimest1 = timer
+                    else:
+                        delta = timer - clktimest1
+                        clktimest1 = 0
+                        calcbpm = int(round(60/(delta*24)))
+
+
+                    if clkcounter == 100:
+                        clkcounter = 0
+                        print("[%r bpm] - [%s] -> [%s]:  CLOCK TICK" % (calcbpm, port_name_in, port_name_out))
+                else:
+                    print("[%r bpm] -  [%s] -> [%s]:  %r" % (calcbpm, port_name_in,port_name_out, message))
+                    pass
+                #midicmd, note, velocity = message
 
                 midiout.send_message(message)
 
