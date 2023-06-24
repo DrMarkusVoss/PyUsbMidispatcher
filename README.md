@@ -47,7 +47,7 @@ It can be called like this:
 ```
 python3 umd.py
 ```
-Then a Tkinter GUI will appear that currently covering the functionality of the "simple" command line version.
+Then a Tkinter GUI will appear that is currently covering the functionality of the "simple" command line version.
 
 
 ## System Requirements
