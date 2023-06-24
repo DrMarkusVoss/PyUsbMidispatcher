@@ -1,10 +1,34 @@
 import time
 import rtmidi
-import math
 from rtmidi.midiutil import list_input_ports, list_output_ports, open_midiinput, open_midioutput
+import tkinter as tk
 
+from PyMidiDispatcherGui import *
+
+
+dconfig = {
+    "NoteFwd": True,
+    "ClockFwd": True,
+    "ClockGen": False,
+    "ClockSrc": "RD-9",
+    "ClockTargets": ["Cobalt8"],
+    "MIDISrc1": "Cobalt8",
+    "NoteFwd1": True,
+    "CCFwd1": True,
+    "NoteTargets1": [[[62,69], "Wavestate_in1"]],
+    "MIDISrc2": "ProKeys",
+    "NoteFwd2": True,
+    "CCFwd2": False,
+    "NoteTargets2": [[[62, 69], "virtual_opsix_in"], [[70, 78], "virtual_wavestatenative_in"]]
+}
+
+virtual = False
 
 def dispatcherMainLoop():
+
+    if virtual:
+        midiout = rtmidi.MidiOut()
+        midiout.open_virtual_port("MultiMidiSequencer")
 
     list_input_ports()
 
@@ -14,12 +38,15 @@ def dispatcherMainLoop():
 
     selected_output_port = selectOutputPort()
 
+
     midiout, port_name_out = open_midioutput(selected_output_port)
+
 
     midiin, port_name_in = open_midiinput(selected_input_port)
 
     # also receive and send clock data
     midiin.ignore_types(timing=False)
+
 
     print("\nUSB-MIDI Dispatcher is active now!\n\n")
     print("\nPress Control-C to exit.")
@@ -34,6 +61,7 @@ def dispatcherMainLoop():
 
             if msg:
                 message, deltatime = msg
+                # print(message)
                 timer += deltatime
                 if int(message[0]) == 248:
                     clkcounter += 1
@@ -44,7 +72,6 @@ def dispatcherMainLoop():
                         clktimest1 = 0
                         calcbpm = int(round(60/(delta*24)))
 
-
                     if clkcounter == 100:
                         clkcounter = 0
                         print("[%r bpm] - [%s] -> [%s]:  CLOCK TICK" % (calcbpm, port_name_in, port_name_out))
@@ -54,6 +81,7 @@ def dispatcherMainLoop():
                 #midicmd, note, velocity = message
 
                 midiout.send_message(message)
+                #midiout2.send_message(message)
 
             # time.sleep(0.01)
     except KeyboardInterrupt:
