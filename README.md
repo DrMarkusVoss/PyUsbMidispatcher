@@ -47,7 +47,7 @@ It can be called like this:
 ```
 python3 umd.py
 ```
-Then a Tkinter GUI will appear that currently is doing nothing, still under develop.
+Then a Tkinter GUI will appear that currently covering the functionality of the "simple" command line version.
 
 
 ## System Requirements
