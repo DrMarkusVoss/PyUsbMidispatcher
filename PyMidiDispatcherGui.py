@@ -112,8 +112,6 @@ class PyMidiDispatcherGui:
 
         clkmaster, port_name_clkmaster = self.midi_cfg.getClkMaster()
 
-        portin_eq_clkmaster = False
-
         # also receive and send clock data
         clkmaster.ignore_types(timing=False)
 
@@ -152,7 +150,10 @@ class PyMidiDispatcherGui:
                         print("[%s] -> [%s]:  %r" % (port_name_in, port_name_out, message))
                         midiout.send_message(message)
             else:
-                print("SAME")
+                # special handling when clkmaster and midi source are the same device,
+                # as opening the same device as input twice leads to errors
+                # like "MidiInCore: message queue limit reached!!" after a while of
+                # playing.
                 while threadrunflag:
                     msg = clkmaster.get_message()
                     if msg:
@@ -170,10 +171,9 @@ class PyMidiDispatcherGui:
 
                             if clkcounter == 100:
                                 clkcounter = 0
-                                #print("[%r bpm] - [%s] -> [%s]:  CLOCK TICK" % (calcbpm, port_name_in, port_name_out))
+                                print("[%r bpm] - [%s] -> [%s]:  CLOCK TICK" % (calcbpm, port_name_clkmaster, port_name_out))
                         else:
-                            #print("[%r bpm] -  [%s] -> [%s]:  %r" % (calcbpm, port_name_in, port_name_out, message))
-                            pass
+                            print("[%r bpm] -  [%s] -> [%s]:  %r" % (calcbpm, port_name_clkmaster, port_name_out, message))
 
                         midiout.send_message(message)
 

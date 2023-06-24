@@ -18,10 +18,14 @@ class MidiDispatchConfig:
         self.gbl_midi_target = self.midi_outs.index(target)
 
     def getGblMidiSource(self):
+        # handle the case that clkmaster and midi source
+        # are the same device;
+        # then we will use the clkmaster to recveive all
+        # messages, as the clock master gets more messages
+        # then the normal midi source (clk message filter).
         if not self.gbl_midi_source == self.clk_master:
             return open_midiinput(self.gbl_midi_source)
         else:
-            print("no MIDI IN")
             return None, ""
 
     def getGblMidiTarget(self):
