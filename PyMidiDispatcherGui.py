@@ -112,6 +112,8 @@ class PyMidiDispatcherGui:
 
         clkmaster, port_name_clkmaster = self.midi_cfg.getClkMaster()
 
+        portin_eq_clkmaster = False
+
         # also receive and send clock data
         clkmaster.ignore_types(timing=False)
 
@@ -122,40 +124,70 @@ class PyMidiDispatcherGui:
         try:
             timer = time()
             clktimer = time()
-            while threadrunflag:
-                msg = midiin.get_message()
-                clkmsg = clkmaster.get_message()
+            if not midiin == None:
+                while threadrunflag:
+                    msg = midiin.get_message()
+                    clkmsg = clkmaster.get_message()
 
-                if clkmsg:
-                    clkmessage, clkdeltatime = clkmsg
-                    clktimer += clkdeltatime
-                    if int(clkmessage[0]) == 248:
-                        midiout.send_message(clkmessage)
-                        clkcounter += 1
-                        if clktimest1 == 0:
-                            clktimest1 = clktimer
+                    if clkmsg:
+                        clkmessage, clkdeltatime = clkmsg
+                        clktimer += clkdeltatime
+                        if int(clkmessage[0]) == 248:
+                            midiout.send_message(clkmessage)
+                            clkcounter += 1
+                            if clktimest1 == 0:
+                                clktimest1 = clktimer
+                            else:
+                                clkdelta = clktimer - clktimest1
+                                clktimest1 = 0
+                                calcbpm = int(round(60 / (clkdelta * 24)))
+
+                            if clkcounter == 100:
+                                clkcounter = 0
+                                print("[%r bpm] - [%s] -> [%s]:  CLOCK TICK" % (calcbpm, port_name_clkmaster, port_name_out))
+                    if msg:
+                        message, deltatime = msg
+                        # print(message)
+                        timer += deltatime
+                        print("[%s] -> [%s]:  %r" % (port_name_in, port_name_out, message))
+                        midiout.send_message(message)
+            else:
+                print("SAME")
+                while threadrunflag:
+                    msg = clkmaster.get_message()
+                    if msg:
+                        message, deltatime = msg
+                        # print(message)
+                        timer += deltatime
+                        if int(message[0]) == 248:
+                            clkcounter += 1
+                            if clktimest1 == 0:
+                                clktimest1 = timer
+                            else:
+                                delta = timer - clktimest1
+                                clktimest1 = 0
+                                calcbpm = int(round(60 / (delta * 24)))
+
+                            if clkcounter == 100:
+                                clkcounter = 0
+                                #print("[%r bpm] - [%s] -> [%s]:  CLOCK TICK" % (calcbpm, port_name_in, port_name_out))
                         else:
-                            clkdelta = clktimer - clktimest1
-                            clktimest1 = 0
-                            calcbpm = int(round(60 / (clkdelta * 24)))
+                            #print("[%r bpm] -  [%s] -> [%s]:  %r" % (calcbpm, port_name_in, port_name_out, message))
+                            pass
 
-                        if clkcounter == 100:
-                            clkcounter = 0
-                            print("[%r bpm] - [%s] -> [%s]:  CLOCK TICK" % (calcbpm, port_name_clkmaster, port_name_out))
-                if msg:
-                    message, deltatime = msg
-                    # print(message)
-                    timer += deltatime
-                    print("[%s] -> [%s]:  %r" % (port_name_in, port_name_out, message))
-                    midiout.send_message(message)
+                        midiout.send_message(message)
 
         except KeyboardInterrupt:
             print('')
         finally:
             print("UMD - MIDI Dispatching Loop stopped... ")
-            midiin.close_port()
+            if not midiin == None:
+                midiin.close_port()
+                del midiin
+            clkmaster.close_port()
             midiout.close_port()
-            del midiin
+
             del midiout
+            del clkmaster
 
 

@@ -18,7 +18,11 @@ class MidiDispatchConfig:
         self.gbl_midi_target = self.midi_outs.index(target)
 
     def getGblMidiSource(self):
-        return open_midiinput(self.gbl_midi_source)
+        if not self.gbl_midi_source == self.clk_master:
+            return open_midiinput(self.gbl_midi_source)
+        else:
+            print("no MIDI IN")
+            return None, ""
 
     def getGblMidiTarget(self):
         return open_midioutput(self.gbl_midi_target)

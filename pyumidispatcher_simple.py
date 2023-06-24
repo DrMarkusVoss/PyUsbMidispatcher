@@ -1,7 +1,6 @@
 import time
 import rtmidi
 from rtmidi.midiutil import list_input_ports, list_output_ports, open_midiinput, open_midioutput
-import tkinter as tk
 
 from PyMidiDispatcherGui import *
 
@@ -55,7 +54,7 @@ def dispatcherMainLoop():
     clktimest2 = 0
     calcbpm = 0
     try:
-        timer = time.time()
+        timer = time()
         while True:
             msg = midiin.get_message()
 
