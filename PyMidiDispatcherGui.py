@@ -128,9 +128,9 @@ class PyMidiDispatcherGui:
 
                 if clkmsg:
                     clkmessage, clkdeltatime = clkmsg
-                    midiout.send_message(clkmessage)
                     clktimer += clkdeltatime
                     if int(clkmessage[0]) == 248:
+                        midiout.send_message(clkmessage)
                         clkcounter += 1
                         if clktimest1 == 0:
                             clktimest1 = clktimer
@@ -141,7 +141,7 @@ class PyMidiDispatcherGui:
 
                         if clkcounter == 100:
                             clkcounter = 0
-                            print("[%r bpm] - [%s] -> [%s]:  CLOCK TICK" % (calcbpm, port_name_in, port_name_out))
+                            print("[%r bpm] - [%s] -> [%s]:  CLOCK TICK" % (calcbpm, port_name_clkmaster, port_name_out))
                 if msg:
                     message, deltatime = msg
                     # print(message)
