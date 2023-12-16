@@ -78,6 +78,25 @@ class PyMidiDispatcherGui:
         self.om_midi_out.place(x=190, y=110, width=200, height=25)
         self.om_midi_out.pack(side=tk.LEFT)
 
+        self.fix_vel_sv = tk.StringVar(root, "127")
+        self.fix_vel_active = False
+
+        self.fix_vel_entry = tk.Entry(root, width=3, textvariable=self.fix_vel_sv,state=tk.DISABLED)
+        self.fix_vel_entry.pack(side=tk.RIGHT)
+        self.fix_vel_active_button = tk.Button(root, text="Fixed VEL OFF",
+                                   command=self.switch)
+        self.fix_vel_active_button.pack(side=tk.RIGHT)
+
+
+    def switch(self):
+        self.fix_vel_active = not(self.fix_vel_active)
+        if self.fix_vel_active:
+            self.fix_vel_entry.config(state=tk.NORMAL)
+            self.fix_vel_active_button.config(text="Fixed VEL ON")
+        else:
+            self.fix_vel_entry.config(state=tk.DISABLED)
+            self.fix_vel_active_button.config(text="Fixed VEL OFF")
+
     def setMidiInputs(self, midi_input_list):
         self.midi_ins = midi_input_list
         self.om_midi_clkmaster.pack()
@@ -146,6 +165,14 @@ class PyMidiDispatcherGui:
                     if msg:
                         message, deltatime = msg
                         # print(message)
+                        if self.fix_vel_active:
+                            msgcmd, msgnote, msgvel = message
+                            if not(msgvel == 0):
+                                vel = int(self.fix_vel_sv.get())
+                                if vel > 127:
+                                    vel = 127
+                                message = [msgcmd, msgnote, vel]
+
                         timer += deltatime
                         print("[%s] -> [%s]:  %r" % (port_name_in, port_name_out, message))
                         midiout.send_message(message)
@@ -159,6 +186,13 @@ class PyMidiDispatcherGui:
                     if msg:
                         message, deltatime = msg
                         # print(message)
+                        if self.fix_vel_active:
+                            msgcmd, msgnote, msgvel = message
+                            if not (msgvel == 0):
+                                vel = int(self.fix_vel_sv.get())
+                                if vel > 127:
+                                    vel = 127
+                                message = [msgcmd, msgnote, vel]
                         timer += deltatime
                         if int(message[0]) == 248:
                             clkcounter += 1
